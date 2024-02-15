@@ -1,0 +1,36 @@
+version: '3'
+services:
+    app:
+        build:
+            context: ./
+        ports:
+            - "80:80"
+        networks:
+            - finance
+        depends_on:
+            - mysql
+    mysql:
+        image: 'mysql/mysql-server:8.0'
+        ports:
+            - '3306:3306'
+        environment:
+            MYSQL_ROOT_PASSWORD: 'root'
+            MYSQL_ROOT_HOST: "%"
+            MYSQL_DATABASE: 'finance'
+            MYSQL_USER: 'finance'
+            MYSQL_PASSWORD: 'finance'
+            MYSQL_ALLOW_EMPTY_PASSWORD: 1
+        volumes:
+            - 'financemysql:/var/lib/mysql'
+        networks:
+            - finance
+        healthcheck:
+            test: ["CMD", "mysqladmin", "ping", "-proot"]
+            retries: 3
+            timeout: 5s
+networks:
+    finance:
+        driver: bridge
+volumes:
+    financemysql:
+        driver: local
