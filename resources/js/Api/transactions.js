@@ -2,10 +2,11 @@ import { gql } from '@urql/core';
 import client from './client.js';
 
 export const getTransactions = (page, searchQuery) => {
+    //                    transactions(search: """${searchQuery}""" page: ${page}) {
     return client
             .query(gql`
                 query {
-                    transactions(search: """${searchQuery}""" page: ${page}) {
+                     transactions(page: ${page}) {
                         data {
                             id
                             amount

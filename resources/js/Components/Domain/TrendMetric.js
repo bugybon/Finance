@@ -129,7 +129,7 @@ export default function TrendMetric({ name, graphql_query, ranges, relation, sho
                     label: {
                       display: true,
                       backgroundColor: '#3b82f6',
-                      content:  'Average: ' + average(ctx_values).toFixed(2)
+                      content:  'Average: ' + average(ctx_values).toFixed(1)
                     },
                     scaleID: 'y',
                     value: average(ctx_values)
@@ -142,6 +142,7 @@ export default function TrendMetric({ name, graphql_query, ranges, relation, sho
             var p = new Parallel(data);
 
             let x_values = Array.from({ length: data.length }, (_, index) => index + 1);
+            let getValues = get.bind()
             let y_values = p.map(function getValue(x) { return x.value;});
             let x_mean = average(x_values);
             let y_mean = average(y_values);
@@ -173,7 +174,7 @@ export default function TrendMetric({ name, graphql_query, ranges, relation, sho
             p = new Parallel(_.range(y_values.length));
             let deltaSquaredHatValues = deltaSquaredArray.bind(y_hat, y_values, null);
             residual_sum_of_squares = p.map(deltaSquaredHatValues).reduce(add);
-            
+
             let deltaSquaredYMean = deltaSquared.bind (null, y_mean);
             p = new Parallel(y_hat);
             total_sum_of_squares = p.map(deltaSquaredYMean).reduce(add);
@@ -193,13 +194,14 @@ export default function TrendMetric({ name, graphql_query, ranges, relation, sho
         }
 
         const ctx = document.getElementById(graphql_query).getContext('2d');
+        var p = new Parallel(data);
         setChartRef(new Chart(ctx, {
             type: 'line',
             data: {
-                labels: data.map(item => item.label),
+                labels: p.map(function getLabel(x) { return x.label;}),
                 datasets: [
                     {
-                        data: data.map(item => item.value),
+                        data: p.map(function getValue(x) { return x.value;}),
                         borderColor: '#0ea5e9',
                         backgroundColor: 'rgba(14, 165, 233, 0.2)',
                         pointHoverRadius: 8,
