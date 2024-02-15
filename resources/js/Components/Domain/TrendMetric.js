@@ -20,6 +20,10 @@ function deltaSquared(x,y){
     return Math.pow(x - y, 2);
 }
 
+function deltaSquaredArray(arr1, arr2, i){
+    return Math.pow(arr1[i] - arr2[i], 2);
+}
+
 export default function TrendMetric({ name, graphql_query, ranges, relation, show_standard_deviation }) {
     const [data, setData] = useState(null);
     const [selectedRange, setSelectedRange] = useState(ranges[0].key);
@@ -148,7 +152,7 @@ export default function TrendMetric({ name, graphql_query, ranges, relation, sho
             }
 
             let deltaSquaredXMean = deltaSquared.bind (null, x_mean);
-            var p = new Parallel(x_values);
+            p = new Parallel(x_values);
             slope_denominator = p.map(deltaSquaredXMean).reduce(add);
             
             slope = slope_numerator/slope_denominator;
@@ -166,12 +170,12 @@ export default function TrendMetric({ name, graphql_query, ranges, relation, sho
             regressor['y_hat'] = y_hat;
             
             let residual_sum_of_squares = 0, total_sum_of_squares = 0, r2 = 0;
-
-            for(let i=0; i<y_values.length; i++){
-                residual_sum_of_squares+= Math.pow((y_hat[i]-y_values[i]),2);
-            }
+            p = new Parallel(_.range(y_values.length));
+            let deltaSquaredHatValues = deltaSquaredArray.bind(y_hat, y_values, null);
+            residual_sum_of_squares = p.map(deltaSquaredHatValues).reduce(add);
+            
             let deltaSquaredYMean = deltaSquared.bind (null, y_mean);
-            var p = new Parallel(y_hat);
+            p = new Parallel(y_hat);
             total_sum_of_squares = p.map(deltaSquaredYMean).reduce(add);
             
             r2 = 1- residual_sum_of_squares/total_sum_of_squares;
